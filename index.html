@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset=utf-8>
+  <title>HTML5 Audio Test</title>
+</head>
+
+<body>
+
+  <h2>Audio Testing</h2>
+
+  <button onclick="playSound()">Wake up!</button>
+
+  <script>
+    var context;
+    var soundBuffer;
+    window.addEventListener('load', init, false);
+
+    function init() {
+      try {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        context = new AudioContext();
+        console.log('web audio initialized');
+        var uri = './rooster.mp3';
+        loadSound(uri);
+      } catch (e) {
+        console.error('web audio api is not supported in the browser');
+      }
+    }
+
+    function loadSound(url) {
+      var request = new XMLHttpRequest();
+      request.open('GET', url, true);
+      request.responseType = 'arraybuffer';
+
+      // Decode asynchronously
+      request.onload = function() {
+        context.decodeAudioData(request.response, function(buffer) {
+          soundBuffer = buffer;
+        }, onError);
+      }
+      request.send();
+    }
+
+    function onError(e) {
+      console.error(e);
+    }
+
+    function playSound() {
+      if (soundBuffer) {
+        var source = context.createBufferSource(); // creates a sound source
+        source.buffer = soundBuffer; // tell the source which sound to play
+        source.connect(context.destination); // connect the source to the context's destination (the speakers)
+        source.start(0);
+      }
+    }
+  </script>
+
+</body>
+
+</html>
